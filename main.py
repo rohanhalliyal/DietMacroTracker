@@ -22,6 +22,44 @@ FOODS = "FOODS"
 for i in range(len(TARGET_NUTRITION)):
 	TARGET_CALS += TARGET_NUTRITION[i] * CALS_PER_NUTRIENT[i]
 
+class Food():
+	def __init__(self, name, serving_size, nutrition):
+		self.name = name
+		self.serving_size = serving_size
+		self.nutrition = nutrition
+
+	def get_calories(self): 
+		total_cal = 0
+		for i in range(len(NUTRIENT_ARRAY)):
+			total_cal += CALS_PER_NUTRIENT[i] * self.nutrition[i]
+		return total_cal
+
+
+class Meal():
+	def __init__(self):
+		self.foods = []
+
+	def get_total_calories(self):
+		total_cal = 0
+		for food in self.foods:
+			total_cal += food.get_calories()
+
+		return total_cal
+
+	def get_total_nutrition(self):
+		total_nutrition = [0] * len(NUTRIENT_ARRAY)
+		for food in self.foods:
+			#TODO (make each nutrient be a first class member of FOod)
+			for i in range(len(NUTRIENT_ARRAY)):
+				total_nutrition[i] += food.nutrition[i]
+
+		return total_nutrition
+
+	def add_food(self, food_name, nutrition_value, serving_size):
+		# TODO not needed -> assert food_name not in self.foods
+		food = Food(food_name, serving_size, [float(n) * serving_size / 100 for n in nutrition_value])
+		self.foods.append(food)
+
 
 def parse_food_file_into_data_structure(f):
 	data = {}
@@ -40,59 +78,40 @@ def food_prompt_loop():
 
 	pass
 
-# total data structure, [protein, carb, fat, fiber]
-def add_food_to_meal(food, serving_size_grams, food_library, meal_stats):
+
+def add_food_to_meal(food, serving_size_grams, food_library, meal):
 	assert food in food_library.keys()
-
 	food_arr = food_library[food]
+	meal.add_food(food, food_arr, serving_size_grams)
 
-	cal_in_food = 0
-	meal_stats[FOODS][food] = (serving_size_grams, [0] * len(NUTRIENT_ARRAY))
-	for i in range(len(NUTRIENT_ARRAY)):
-		nutrient_per_serving_size = food_arr[i]
-		nutrient_total = float(nutrient_per_serving_size) / DEFAULT_SERVING_SIZE * serving_size_grams
-		#TODO this is brittle... should we check which nutrient we're parsing?
-		meal_stats[FOODS][food][1][i] = nutrient_total
-		meal_stats[NUTRITION][i] += nutrient_total
-		meal_stats[CALORIES] += CALS_PER_NUTRIENT[i] * nutrient_total
-
-
-	#TODO ignored
-	return meal_stats
 
 def print_meal_stats(meal_stats):
-	for food in meal_stats[FOODS]:
-		str_to_print = str(meal_stats[FOODS][food][0]) + " grams " + food + ": "
+	for food in meal.foods:
+		str_to_print = str(food.serving_size) + " grams " + food.name + ": "
 		for i in range(len(NUTRIENT_ARRAY)):
-			str_to_print += NUTRIENT_ARRAY[i] + " " + str(meal_stats[FOODS][food][1][i]) + "g "
+			str_to_print += NUTRIENT_ARRAY[i] + " " + str(food.nutrition[i]) + "g "
 		print(str_to_print)
 
 	str_to_print = "Meal Total: "
 	for i in range(len(NUTRIENT_ARRAY)):
-		str_to_print += NUTRIENT_ARRAY[i] + " " + str(meal_stats[NUTRITION][i]) + "g "
+		str_to_print += NUTRIENT_ARRAY[i] + " " + str(meal.get_total_nutrition()[i]) + "g "
 	print(str_to_print)
 
 with open(sys.argv[1], "rtU") as f:
 	food_library = parse_food_file_into_data_structure(f)
 
-	meal_stats = {CALORIES: 0, NUTRITION: [0] * len(NUTRIENT_ARRAY), FOODS: {}}
-	add_food_to_meal("chicken breast", 300, food_library, meal_stats)
-	add_food_to_meal("avocado", 220, food_library, meal_stats)
-	add_food_to_meal("broccoli", 500, food_library, meal_stats)
+	meal = Meal()
+	add_food_to_meal("chicken breast", 300, food_library, meal)
+	add_food_to_meal("avocado", 220, food_library, meal)
+	add_food_to_meal("broccoli", 500, food_library, meal)
 
 	# Write meal to file
 
-	print_meal_stats(meal_stats)
+	# for meal in all_meals_in_above_file: 
+	print_meal_stats(meal)
+	# running counter for daily and remaining nurition/cals
 
 	#TODO print Day's Total
-
-	str_to_print = "Remaining: "
-		#print(meal_stats[FOODS][food])
-	#for i in range(len(NUTRIENT_ARRAY)):
-	#	print(NUTRIENT_ARRAY[i] + ": " + str(meal_stats[NUTRITION][i]) + " Remaining: " + str(TARGET_NUTRITION[i] - meal_stats[NUTRITION][i]))
-
-	#print ("Calories: " + str(meal_stats[CALORIES]) + " Remaining: " + str(TARGET_CALS - meal_stats[CALORIES]))
-
 
 # target nutrition; remaining nutrition for the day.
 # target cals, remaining cals for the day.
