@@ -34,6 +34,22 @@ class Food():
 			total_cal += CALS_PER_NUTRIENT[i] * self.nutrition[i]
 		return total_cal
 
+	def __str__(self):
+		return str(self.serving_size) + "g " + self.name 
+
+
+# TODO, can methods here be static?
+class FoodFactory():
+	def __init__(self, food_library):
+		self.food_library = food_library
+
+	def create_food(self, name, serving_size):
+		assert name in self.food_library.keys()
+		nutrition = food_library[name]
+		food = Food(name, serving_size, [float(n) * serving_size / 100 for n in nutrition])
+		return food
+
+
 
 class Meal():
 	def __init__(self):
@@ -55,10 +71,14 @@ class Meal():
 
 		return total_nutrition
 
-	def add_food(self, food_name, nutrition_value, serving_size):
-		# TODO not needed -> assert food_name not in self.foods
-		food = Food(food_name, serving_size, [float(n) * serving_size / 100 for n in nutrition_value])
+	def add_food(self, food):
 		self.foods.append(food)
+
+	def __str__(self):
+		ret = ""
+		for food in self.foods:
+			ret+= str(food) + "\n"
+		return ret
 
 
 def parse_food_file_into_data_structure(f):
@@ -72,17 +92,33 @@ def parse_food_file_into_data_structure(f):
 
 	return data
 
-def food_prompt_loop():
-	# spin up prompt for user to input
-	# collect input with running total
 
-	pass
+def food_prompt_loop(food_library):
+	foodFactory = FoodFactory(food_library)
+	meal = Meal()
+	while True: 
+		more_input = raw_input("Enter a food?")
+		if more_input == "n":
+			break
+		#TODO make assertion for food happen here
+		food = raw_input("What food? ")
+		#TODO bake int type into prompt
+		serving_size = raw_input("Amount: ")
+
+		meal.add_food(foodFactory.create_food(food, int(serving_size)))
+
+		#TODO figure out how to limit input to y/n
+		#TODO figure out how to not ask this question every time, and instead have an opportunity to escape the food loop
 
 
-def add_food_to_meal(food, serving_size_grams, food_library, meal):
-	assert food in food_library.keys()
-	food_arr = food_library[food]
-	meal.add_food(food, food_arr, serving_size_grams)
+	# check if meal is correct
+	print(meal)
+	correct = raw_input("Is this correct?")
+
+	#TODO bake this into prompt
+	#assert correct == "y"
+
+	return meal
 
 
 def print_meal_stats(meal_stats):
@@ -97,18 +133,62 @@ def print_meal_stats(meal_stats):
 		str_to_print += NUTRIENT_ARRAY[i] + " " + str(meal.get_total_nutrition()[i]) + "g "
 	print(str_to_print)
 
-with open(sys.argv[1], "rtU") as f:
-	food_library = parse_food_file_into_data_structure(f)
 
+def main():
+	#TODO use cmd line parser instead of this
+	#TODO figure out how to not have 2 nested scopes
 	meal = Meal()
-	add_food_to_meal("chicken breast", 300, food_library, meal)
-	add_food_to_meal("avocado", 220, food_library, meal)
-	add_food_to_meal("broccoli", 500, food_library, meal)
+	with open(sys.argv[1], "rtU") as food_library:
+		meal = food_prompt_loop(food_library)
+
+		write_to_foodlog(sys.argv[2], meal)
+
+		foodFactory = FoodFactory(food_library)
+		parse_food_log(sys.argv[2], foodFactory)
+
+		pp.pprint(meals)
+	# 	with open(sys.argv[2], "a") as food_log:
+
+
+def parse_food_log(food_log_file_name, foodFactory):
+	meals = []
+	with open(food_log_file_name, "rtU") as food_log:
+		meal = Meal()
+		for line in food_log:			
+			#TODO better way to delimit?
+			if line == '*':
+				meals.append(meal)
+				meal = Meal()
+			else:
+				food_and_serving_size = line.strip().split(',')
+				assert len(food_and_serving_size) == 2
+				food = foodFactory.create_food(food_and_serving_size[0], food_and_serving_size[1])
+				meal.add_food(food)
+	return meals
+
+def write_to_foodlog(food_log_file_name, meal):
+	with open(food_log_file_name, "a") as food_log:
+		for food in meal.foods:
+			food_log.append(food.name + "," + food.serving_size)
+		#TODO better way for meal delimiter?
+		food_log.append("*")
+
+#TODO can I use cmd line parser for file name args?
+main()
+#with open(sys.argv[1], "rtU") as f:
+	#food_library = parse_food_file_into_data_structure(f)
+
+	#meal = Meal()
+
+	#food_prompt_loop(food_library, meal)
+#	add_food_to_meal("chicken breast", 300, food_library, meal)
+#	add_food_to_meal("avocado", 220, food_library, meal)
+#	add_food_to_meal("broccoli", 500, food_library, meal)
 
 	# Write meal to file
 
 	# for meal in all_meals_in_above_file: 
-	print_meal_stats(meal)
+	#print_meal_stats(meal)
 	# running counter for daily and remaining nurition/cals
 
 	#TODO print Day's Total
@@ -116,6 +196,12 @@ with open(sys.argv[1], "rtU") as f:
 # target nutrition; remaining nutrition for the day.
 # target cals, remaining cals for the day.
 # meal's percentage of cals by macro
+
+#1. write each meal to a file
+#2. parse all meals from the mega file
+#3. figure out how to end the day
+#4. prompt user in a loop for entering foods
+#5.
 
 # 1. how to open and write to a file permanently
 # 1b. Alternatively, use a DB
