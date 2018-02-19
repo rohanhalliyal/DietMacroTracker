@@ -33,7 +33,6 @@ class Food():
 		return str(self.serving_size) + "g " + self.name 
 
 
-# TODO, can methods here be static?
 class FoodFactory():
 	def __init__(self, food_library):
 		self.food_library = food_library
@@ -115,18 +114,36 @@ def food_prompt_loop(foodFactory):
 
 	return meal
 
+def build_nutrition_string(nutrition):
+	str_to_print = ""
+	for i in range(len(NUTRIENT_ARRAY)):
+		str_to_print += NUTRIENT_ARRAY[i] + " " + str(nutrition[i]) + "g "
+	return str_to_print
 
-def print_meal_stats(meal_stats):
+def print_meal_stats(meal):
 	for food in meal.foods:
 		str_to_print = str(food.serving_size) + " grams " + food.name + ": "
 		for i in range(len(NUTRIENT_ARRAY)):
 			str_to_print += NUTRIENT_ARRAY[i] + " " + str(food.nutrition[i]) + "g "
 		print(str_to_print)
 
-	str_to_print = "Meal Total: "
-	for i in range(len(NUTRIENT_ARRAY)):
-		str_to_print += NUTRIENT_ARRAY[i] + " " + str(meal.get_total_nutrition()[i]) + "g "
-	print(str_to_print)
+	print "Meal Total: {}Calories: {}\n".format(build_nutrition_string(meal.get_total_nutrition()), meal.get_total_calories())
+
+def print_total_nutrition(meals):
+	total_calories = 0
+	total_nutrition = [0] * len(NUTRIENT_ARRAY)
+	for meal in meals:
+		total_calories += meal.get_total_calories()
+		for i in range(len(total_nutrition)):
+			total_nutrition[i] += meal.get_total_nutrition()[i]
+	
+	remaining_nutrition = [0] * len(NUTRIENT_ARRAY)
+	for i in range(len(total_nutrition)):
+		remaining_nutrition[i] = TARGET_NUTRITION[i] - total_nutrition[i]
+
+	print
+	print "Nutrition: {}Calories: {}".format(build_nutrition_string(total_nutrition), total_calories)
+	print "Remaining: {}Calories: {}".format(build_nutrition_string(remaining_nutrition), TARGET_CALS - total_calories)
 
 
 def main():
@@ -142,9 +159,11 @@ def main():
 
 		meals = parse_food_log(sys.argv[2], foodFactory)
 
-		for m in meals:
-			print(m)
-	# 	with open(sys.argv[2], "a") as food_log:
+		for i in range(len(meals)):
+			print "Meal {}:".format(i)
+			print_meal_stats(meals[i])
+
+		print_total_nutrition(meals)
 
 
 def parse_food_log(food_log_file_name, foodFactory):
@@ -158,7 +177,6 @@ def parse_food_log(food_log_file_name, foodFactory):
 				meal = Meal()
 			else:
 				food_and_serving_size = line.strip().split(',')
-				print(food_and_serving_size)
 				assert len(food_and_serving_size) == 2
 				food = foodFactory.create_food(food_and_serving_size[0], food_and_serving_size[1])
 				meal.add_food(food)
@@ -176,6 +194,13 @@ def write_to_foodlog(food_log_file_name, meal):
 
 #TODO can I use cmd line parser for file name args?
 main()
+
+
+# 2. default file choices for food library and for daily log with --overrides
+# 3. simplify food prompt
+
+
+
 #with open(sys.argv[1], "rtU") as f:
 	#food_library = parse_food_file_into_data_structure(f)
 
