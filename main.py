@@ -1,5 +1,7 @@
 import sys
 import pprint 
+import argparse
+import datetime
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -42,7 +44,6 @@ class FoodFactory():
 		return food
 
 
-
 class Meal():
 	def __init__(self):
 		self.foods = []
@@ -73,6 +74,17 @@ class Meal():
 		return ret
 
 
+#TODO re-write using a lambda
+def yes_or_no(question):
+    reply = str(raw_input(question+' (y/n): ')).lower().strip()
+    if reply[0] == 'y':
+        return True
+    if reply[0] == 'n':
+        return False
+    else:
+        return yes_or_no("Use y/n:")
+
+
 def parse_food_file_into_data_structure(f):
 	data = {}
 	for line in f: 
@@ -87,10 +99,7 @@ def parse_food_file_into_data_structure(f):
 
 def food_prompt_loop(foodFactory):
 	meal = Meal()
-	while True: 
-		more_input = raw_input("Enter a food? ")
-		if more_input == "n":
-			break
+	while yes_or_no("Enter a food?"): 
 		#TODO make assertion for food happen here
 		food = raw_input("What food? ").strip()
 		#TODO bake int type into prompt
@@ -143,28 +152,57 @@ def print_total_nutrition(meals):
 	print "Remaining: {}Calories: {}".format(build_nutrition_string(remaining_nutrition), TARGET_CALS - total_calories)
 
 
-def main():
-	#TODO use cmd line parser instead of this
-	#TODO figure out how to not have 2 nested scopes
-	with open(sys.argv[1], "rtU") as food_library_file:
-		food_library = parse_food_file_into_data_structure(food_library_file)
-		foodFactory = FoodFactory(food_library)
+def main():	
+	parser = argparse.ArgumentParser()
+	parser.add_argument(
+		"--library", 
+		required=False, 
+		nargs=1, 
+		default='food_spreadsheet.csv',
+		dest="food_library_file",
+		type=file,
+		action='store',
+		help='File path of possible foods and their nutritional values')
 
-		meal = food_prompt_loop(foodFactory)
+	parser.add_argument(
+		"--log",
+		nargs=1,
+		required=False,
+		default='food_logs/{}.txt'.format(datetime.datetime.now().strftime("%Y-%m-%d")),
+		dest='food_log_file',
+		action='store',
+		help='File path of food log file to use')
 
-		write_to_foodlog(sys.argv[2], meal)
 
-		meals = parse_food_log(sys.argv[2], foodFactory)
+	args = parser.parse_args()
 
-		for i in range(len(meals)):
-			print "Meal {}:".format(i)
-			print_meal_stats(meals[i])
+	if not yes_or_no("Will use library '{}' and log '{}'".format(
+		args.food_library_file.name, 
+		args.food_log_file)
+	):
+		parser.print_help()
+		return
 
-		print_total_nutrition(meals)
+	food_library = parse_food_file_into_data_structure(args.food_library_file)
+
+	foodFactory = FoodFactory(food_library)
+
+	meal = food_prompt_loop(foodFactory)
+
+	write_to_foodlog(args.food_log_file, meal)
+
+	meals = parse_food_log(args.food_log_file, foodFactory)
+
+	for i in range(len(meals)):
+		print "Meal {}:".format(i)
+		print_meal_stats(meals[i])
+
+	print_total_nutrition(meals)
 
 
 def parse_food_log(food_log_file_name, foodFactory):
 	meals = []
+	#TODO try catch
 	with open(food_log_file_name, "rtU") as food_log:
 		meal = Meal()
 		for line in food_log:			
