@@ -1,8 +1,5 @@
 import sys
-import pprint
-# takes in food data
-# food name, protein, fat, carb, fiber (per 100g)
-# returns a map of {K=food, V=[nutrition]}
+import pprint 
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -195,72 +192,14 @@ def write_to_foodlog(food_log_file_name, meal):
 #TODO can I use cmd line parser for file name args?
 main()
 
-
 # 2. default file choices for food library and for daily log with --overrides
 # 3. simplify food prompt
-
-
-
-#with open(sys.argv[1], "rtU") as f:
-	#food_library = parse_food_file_into_data_structure(f)
-
-	#meal = Meal()
-
-	#food_prompt_loop(food_library, meal)
-#	add_food_to_meal("chicken breast", 300, food_library, meal)
-#	add_food_to_meal("avocado", 220, food_library, meal)
-#	add_food_to_meal("broccoli", 500, food_library, meal)
-
-	# Write meal to file
-
-	# for meal in all_meals_in_above_file: 
-	#print_meal_stats(meal)
-	# running counter for daily and remaining nurition/cals
-
-	#TODO print Day's Total
-
-# target nutrition; remaining nutrition for the day.
-# target cals, remaining cals for the day.
-# meal's percentage of cals by macro
-
-#1. write each meal to a file
-#2. parse all meals from the mega file
-#3. figure out how to end the day
-#4. prompt user in a loop for entering foods
-#5.
-
-# 1. how to open and write to a file permanently
-# 1b. Alternatively, use a DB
-# 2. How to prompt user in a loop
-
-# BRAINSTORM
-# WHAT TO WRITE TO FILE: food serving_size, food serving_size, NEXT MEAL, food serving_size etc
-# then prase the entire file, give breakdown by MEAL 1: MEAL 2: MEAL 3: etc
-
-# MEAL#1
-# chicken breast 100g      Protein: 50g. Carb 40g. Fat 20g. Fiber 0g.
-# avocado        100g      Protein: 50g. Carb 40g. Fat 20g. Fiber 0g.
-# sweet potato   100g      Protein: 50g. Carb 40g. Fat 20g. Fiber 0g.
-# total                    Protein 150g. Carb 120g. Fat 60g. Fiber 0g. Cals 1000. 
-# remaining: 			   Protein 30g. Carb 46g. Fat 20g. Fiber 40g. Cals 800
-# MEAL #2
-
-
+# 4. spacing on output
 
 # Assume which date ( Today ) that the food is for, but ask if user wants to change it
 
-
-#1. Query document to build up list of foods with their nutrition info
-#2. Command line prompt loop -> prompt for which food and how much grams of it until done entering a meal
-#3. print out summary and ask "is this correct?"
-#4. print out meal summary: nutrition per meal (fat, carbs, protein, fiber) & calorie breakdown
-
-#5. "What's left for the day?" Given calorie target (hardcoded) and macro target (hardcoded), tell you what you have left after this meal
-#6. keep track of the day: Start morning off with calorie and macro target. Program stores state of what was eaten and what is left. On next meal it continues that state. Based on date/time
-
 #7. type-ahead search for foods
 
-#8. save a daily human readable summary (what foods, what macros hit, total cals)
 
 
 
