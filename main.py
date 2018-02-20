@@ -164,7 +164,6 @@ def main():
 		type=str,
 		help='File path of food log file to use')
 
-<<<<<<< HEAD
 	for i in range(len(NUTRIENT_ARRAY)):
 		parser.add_argument(
 			"--{}".format(NUTRIENT_ARRAY[i]),
