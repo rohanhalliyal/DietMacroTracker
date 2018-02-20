@@ -104,11 +104,9 @@ def food_prompt_loop(foodFactory):
 
 		serving_size = raw_input("Amount: ")
 		meal.add_food(foodFactory.create_food(food, int(serving_size)))
-
 	if meal.foods:
 		print '\nMeal:\n{}'.format(meal)
 		assert yes_or_no("Is this correct?")
-
 	return meal
 
 
@@ -166,6 +164,7 @@ def main():
 		type=str,
 		help='File path of food log file to use')
 
+<<<<<<< HEAD
 	for i in range(len(NUTRIENT_ARRAY)):
 		parser.add_argument(
 			"--{}".format(NUTRIENT_ARRAY[i]),
@@ -241,11 +240,3 @@ main()
 # 2. spacing on output
 # 3. type-ahead search for foods
 # 4. maybe: make each nutrient be a first class member of food
-
-
-
-
-
-
-
-
