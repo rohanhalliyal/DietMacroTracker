@@ -88,7 +88,6 @@ class AddFoodLoop(Cmd):
                 self.meal.add_food(food)
             except Exception as e:
                 print("{} does not exist in the food library.".format(m.group(1)))
-
     def do_done(self, s):
         return True
 
@@ -129,15 +128,16 @@ def food_prompt_loop(foodFactory):
 def build_nutrition_string(nutrition):
     str_to_print = ""
     for i in range(len(NUTRIENT_ARRAY)):
-        str_to_print += NUTRIENT_ARRAY[i] + " " + str(nutrition[i]) + "g "
+        str_to_print += NUTRIENT_ARRAY[i] + " {:.2f}".format(nutrition[i]) + "g "
     return str_to_print
 
 
 def print_meal_stats(meal):
     for food in meal.foods:
-        print("{} grams {}: {}".format(str(food.serving_size), food.name, build_nutrition_string(food.nutrition)))
+        print("{} grams {}".format(str(food.serving_size), food.name, build_nutrition_string(food.nutrition)))
 
-    print("Meal Total: {}Calories: {}".format(build_nutrition_string(meal.get_total_nutrition()), meal.get_total_calories()))
+
+    print("Meal Total: {}Calories: {:.2f}".format(build_nutrition_string(meal.get_total_nutrition()), meal.get_total_calories()))
 
 
 def print_total_nutrition(meals, target_nutrition):
@@ -156,8 +156,13 @@ def print_total_nutrition(meals, target_nutrition):
     for i in range(len(NUTRIENT_ARRAY)):
         target_cals += target_nutrition[i] * CALS_PER_NUTRIENT[i]
 
-    print("\nNutrition: {}Calories: {}".format(build_nutrition_string(total_nutrition), total_calories))
-    print("Remaining: {}Calories: {}".format(build_nutrition_string(remaining_nutrition), target_cals - total_calories))
+    ratio = [] 
+    for i in range(len(total_nutrition)):
+        ratio.append(CALS_PER_NUTRIENT[i] * total_nutrition[i] / total_calories * 100)
+
+    print("\nNutrition: {}Calories: {:.2f}".format(build_nutrition_string(total_nutrition), total_calories))
+    print("Remaining: {}Calories: {:.2f}".format(build_nutrition_string(remaining_nutrition), target_cals - total_calories))
+    print("Macro Breakdown P/C/F by %: " + str(["{:.1f}".format(i) for i in ratio[:-1]]))
 
 
 def main(): 
